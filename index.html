@@ -19,9 +19,9 @@
     input:focus, select:focus{outline:none;border-color:#16805c;}
     .items-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;}
     @media(max-width:480px){.items-grid{grid-template-columns:1fr;}}
-    .item-option{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f0f7f4;border-radius:8px;cursor:pointer;transition:all 0.2s;}
+    .item-option{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f0f7f4;border:2px solid transparent;border-radius:8px;cursor:pointer;transition:all 0.2s;}
     .item-option:hover{background:#dcf1e7;}
-    .item-option.selected{background:#b7e4cd;border:2px solid #16805c;}
+    .item-option.selected{background:#b7e4cd;border-color:#16805c;}
     .item-option input[type="checkbox"]{width:auto;margin:0;transform:scale(1.2);accent-color:#16805c;}
     .quantidade-box{background:#e8f5ef;padding:12px;border-radius:8px;margin:10px 0 15px 0;display:none;}
     .quantidade-box.visivel{display:block;}
@@ -94,7 +94,7 @@
       </div>
       
       <div id="loginAdmin">
-        <input type="password" id="senhaAdmin" placeholder="Digite a senha de administração">
+        <input type="password" id="senhaAdmin" placeholder="Digite a senha de administração" onkeypress="if(event.key==='Enter') verificarSenha()">
         <button class="btn-admin" onclick="verificarSenha()">🔑 Entrar como Administrador</button>
       </div>
       
@@ -102,7 +102,7 @@
         <div class="status-sync ok" id="statusAdminSync"></div>
         <h3 style="margin:15px 0 10px;color:#6b21a8;">📋 Lista Completa da Família</h3>
         <div id="listaCompleta">
-          <div class="empty">Aguardando contribuições...</div>
+          <div class="empty">Carregando contribuições...</div>
         </div>
         
         <div class="divider"></div>
@@ -141,6 +141,7 @@
     let meuNome = '';
     let qtdRefri = '';
     let adminLogado = false;
+    let ultimoSnapshot = null;
     let idUsuario = localStorage.getItem('idUsuario') || gerarId();
 
     if (!localStorage.getItem('idUsuario')) {
@@ -148,12 +149,18 @@
     }
 
     function gerarId() {
-      return 'usr_' + Math.random().toString(36).substr(2, 9);
+      return 'usr_' + Math.random().toString(36).substring(2, 11);
+    }
+
+    function escaparHTML(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
     }
 
     window.onload = function() {
-      renderizarItens();
       carregarMinhaContribuicao();
+      renderizarItens();
       configurarAtualizacaoTempoReal();
     };
 
@@ -162,8 +169,8 @@
       container.innerHTML = ITENS_CEIA.map(item => {
         const selecionado = minhaLista.includes(item);
         return `
-          <label class="item-option ${selecionado?'selected':''}">
-            <input type="checkbox" value="${item}" ${selecionado?'checked':''} onchange="toggleItem('${item}')">
+          <label class="item-option ${selecionado ? 'selected' : ''}">
+            <input type="checkbox" value="${item}" ${selecionado ? 'checked' : ''} onchange="toggleItem('${item}')">
             <span>${item}${item === ITEM_REFRIGERANTE ? ' 🥤' : ''}</span>
           </label>
         `;
@@ -187,6 +194,7 @@
       } else {
         box.classList.remove('visivel');
         document.getElementById('qtdRefri').value = '';
+        qtdRefri = '';
       }
     }
 
@@ -203,16 +211,17 @@
         idUsuario,
         nome: meuNome,
         itens: [...minhaLista],
-        qtdRefri: qtdRefri || null,
+        qtdRefri: minhaLista.includes(ITEM_REFRIGERANTE) ? qtdRefri : null,
         atualizadoEm: new Date()
       };
 
       try {
+        statusEl.classList.remove('ok');
         statusEl.textContent = "🔄 Salvando...";
         await db.collection(colecao).doc(idUsuario).set(dados);
         localStorage.setItem('meuNome', meuNome);
         localStorage.setItem('minhaLista', JSON.stringify(minhaLista));
-        localStorage.setItem('qtdRefri', qtdRefri);
+        localStorage.setItem('qtdRefri', dados.qtdRefri || '');
         statusEl.textContent = "✅ Salvo com sucesso!";
         statusEl.classList.add('ok');
         setTimeout(() => statusEl.textContent = "", 3000);
@@ -230,7 +239,13 @@
       const qtdSalva = localStorage.getItem('qtdRefri');
       
       if (nomeSalvo) meuNome = nomeSalvo;
-      if (listaSalva) minhaLista = JSON.parse(listaSalva);
+      if (listaSalva) {
+        try {
+          minhaLista = JSON.parse(listaSalva) || [];
+        } catch (e) {
+          minhaLista = [];
+        }
+      }
       if (qtdSalva) qtdRefri = qtdSalva;
       
       if (meuNome) document.getElementById('nome').value = meuNome;
@@ -240,14 +255,15 @@
 
     function configurarAtualizacaoTempoReal() {
       db.collection(colecao).orderBy('nome').onSnapshot(snapshot => {
+        ultimoSnapshot = snapshot;
         atualizarPainelAdmin(snapshot);
       }, erro => {
-        console.log("Aguardando login do admin...", erro);
+        console.error("Erro ao sincronizar:", erro);
       });
     }
 
     function atualizarPainelAdmin(snapshot) {
-      if (!adminLogado) return;
+      if (!adminLogado || !snapshot) return;
       
       const container = document.getElementById('listaCompleta');
       const statusEl = document.getElementById('statusAdminSync');
@@ -269,16 +285,18 @@
     }
 
     function gerarBlocoPessoa(p) {
-      let itensHTML = p.itens.map(i => {
+      const itens = Array.isArray(p.itens) ? p.itens : [];
+      let itensHTML = itens.map(i => {
+        const itemSeguro = escaparHTML(i);
         if (i === ITEM_REFRIGERANTE && p.qtdRefri) {
-          return `<span class="tag-item destaque">✅ ${i}: ${p.qtdRefri}</span>`;
+          return `<span class="tag-item destaque">✅ ${itemSeguro}: ${escaparHTML(p.qtdRefri)}</span>`;
         }
-        return `<span class="tag-item">✅ ${i}</span>`;
+        return `<span class="tag-item">✅ ${itemSeguro}</span>`;
       }).join('');
       
       return `
         <div class="pessoa-block">
-          <div class="pessoa-nome">🎅 ${p.nome}</div>
+          <div class="pessoa-nome">🎅 ${escaparHTML(p.nome || 'Sem nome')}</div>
           <div class="pessoa-itens">${itensHTML}</div>
         </div>
       `;
@@ -288,10 +306,14 @@
       const senhaDigitada = document.getElementById('senhaAdmin').value;
       if (senhaDigitada === SENHA_ADMIN) {
         adminLogado = true;
+        document.getElementById('senhaAdmin').value = '';
         document.getElementById('loginAdmin').classList.add('hidden');
         document.getElementById('painelAdmin').classList.remove('hidden');
         document.getElementById('statusAdmin').textContent = "Admin ✅";
         document.getElementById('statusAdmin').style.background = "#20a070";
+        if (ultimoSnapshot) {
+          atualizarPainelAdmin(ultimoSnapshot);
+        }
       } else {
         alert("❌ Senha incorreta!");
       }
@@ -313,7 +335,7 @@
       snapshot.forEach(doc => {
         const p = doc.data();
         texto += `🎅 *${p.nome}*\n`;
-        p.itens.forEach(i => {
+        (p.itens || []).forEach(i => {
           if (i === ITEM_REFRIGERANTE && p.qtdRefri) {
             texto += `✅ ${i}: ${p.qtdRefri}\n`;
           } else {
@@ -342,4 +364,19 @@
     }
 
     async function limparTodasContribuicoes() {
-      if (!confirm('⚠️ Tem certeza? Isso apaga TODAS as contribuições
+      if (!confirm('⚠️ Tem certeza? Isso apaga TODAS as contribuições da lista!')) return;
+
+      try {
+        const snapshot = await db.collection(colecao).get();
+        const batch = db.batch();
+        snapshot.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+        alert('🗑️ Todas as contribuições foram apagadas com sucesso!');
+      } catch (erro) {
+        console.error(erro);
+        alert('❌ Erro ao limpar contribuições: ' + erro.message);
+      }
+    }
+  </script>
+</body>
+</html>
