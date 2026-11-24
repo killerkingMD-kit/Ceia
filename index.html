@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎄 Lista Ceia de Natal — Família</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Roboto,sans-serif;}
+    body{background:linear-gradient(135deg,#0f4d38,#16805c);min-height:100vh;padding:20px;}
+    .container{max-width:600px;margin:0 auto;}
+    header{text-align:center;color:white;margin-bottom:25px;}
+    header h1{font-size:1.7rem;margin-bottom:5px;}
+    header p{opacity:0.9;}
+    .card{background:#fff;border-radius:16px;padding:22px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,0.1);}
+    h2{font-size:1.15rem;color:#0f4d38;margin-bottom:15px;}
+    input, select{width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;margin-bottom:12px;}
+    input:focus, select:focus{outline:none;border-color:#16805c;}
+    .items-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;}
+    @media(max-width:480px){.items-grid{grid-template-columns:1fr;}}
+    .item-option{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f0f7f4;border-radius:8px;cursor:pointer;transition:all 0.2s;}
+    .item-option:hover{background:#dcf1e7;}
+    .item-option.selected{background:#b7e4cd;border:2px solid #16805c;}
+    .item-option input[type="checkbox"]{width:auto;margin:0;transform:scale(1.2);accent-color:#16805c;}
+    .quantidade-box{background:#e8f5ef;padding:12px;border-radius:8px;margin:10px 0 15px 0;display:none;}
+    .quantidade-box.visivel{display:block;}
+    .quantidade-box label{font-size:0.95rem;color:#0f4d38;font-weight:500;display:block;margin-bottom:6px;}
+    .quantidade-box select{max-width:100%;margin-bottom:0;background:white;}
+    button{width:100%;padding:14px;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:opacity 0.2s;}
+    button:active{opacity:0.85;}
+    .btn-primary{background:linear-gradient(135deg,#16805c,#20a070);color:white;margin:8px 0;}
+    .btn-whatsapp{background:#25D366;color:white;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;}
+    .btn-admin{background:linear-gradient(135deg,#6b21a8,#8b5cf6);color:white;margin-top:8px;}
+    .btn-clear{background:#e74c3c;color:white;margin-top:8px;}
+    .btn-small{padding:8px 12px;font-size:0.9rem;width:auto;display:inline-block;}
+    .divider{height:1px;background:#e2e8f0;margin:18px 0;}
+    .pessoa-block{padding:14px;background:#f8faf9;border-radius:8px;margin-bottom:12px;border-left:4px solid #16805c;}
+    .pessoa-nome{font-weight:600;color:#0f4d38;margin-bottom:8px;font-size:1.05rem;}
+    .pessoa-itens{color:#374151;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+    .tag-item{background:#dcf1e7;color:#0f4d38;padding:4px 10px;border-radius:12px;font-size:0.9rem;}
+    .tag-item.destaque{background:#fff3cd;color:#856404;border:1px solid #ffc107;}
+    .empty{text-align:center;padding:30px 20px;color:#888;}
+    .aviso{background:#e3f2fd;border:1px solid #2196f3;padding:12px;border-radius:8px;margin-bottom:15px;color:#0c5460;font-size:0.9rem;line-height:1.5;}
+    .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;}
+    .admin-header h2{color:#6b21a8;margin-bottom:0;}
+    .badge{background:#8b5cf6;color:white;padding:4px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;}
+    .status-sync{text-align:center;font-size:0.85rem;color:#666;margin-bottom:10px;}
+    .status-sync.ok{color:#20a070;}
+    .hidden{display:none !important;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎄 Ceia de Natal — Família</h1>
+      <p>Juntos organizando nossa ceia!</p>
+    </header>
+
+    <div class="aviso">
+      💡 <strong>Como usar:</strong> Digite seu nome → marque os itens → clique em Salvar!
+    </div>
+
+    <div class="card" id="formUsuario">
+      <h2>✍️ Minha Contribuição</h2>
+      <input type="text" id="nome" placeholder="Digite seu nome completo">
+      
+      <h3 style="font-size:1rem;color:#333;margin:12px 0 8px;">Itens da Ceia:</h3>
+      <div class="items-grid" id="itensContainer"></div>
+      
+      <div class="quantidade-box" id="refriQuantidadeBox">
+        <label for="qtdRefri">🥤 Quantidade de refrigerante:</label>
+        <select id="qtdRefri">
+          <option value="">Selecione uma opção...</option>
+          <option value="1 garrafa de 1L">1 garrafa de 1L</option>
+          <option value="2 garrafas de 1L">2 garrafas de 1L</option>
+          <option value="1 garrafa de 1,5L">1 garrafa de 1,5L</option>
+          <option value="2 garrafas de 1,5L">2 garrafas de 1,5L</option>
+          <option value="1 garrafa de 2L">1 garrafa de 2L</option>
+          <option value="2 garrafas de 2L">2 garrafas de 2L</option>
+          <option value="3 garrafas de 2L">3 garrafas de 2L</option>
+          <option value="Mais de 3 garrafas de 2L">Mais de 3 garrafas de 2L</option>
+        </select>
+      </div>
+      
+      <button class="btn-primary" onclick="salvarContribuicao()">💾 Salvar Minha Escolha</button>
+      <div class="status-sync" id="statusUsuario"></div>
+    </div>
+
+    <div class="card">
+      <div class="admin-header">
+        <h2>🔒 Área do Administrador</h2>
+        <span class="badge" id="statusAdmin">Desconectado</span>
+      </div>
+      
+      <div id="loginAdmin">
+        <input type="password" id="senhaAdmin" placeholder="Digite a senha de administração">
+        <button class="btn-admin" onclick="verificarSenha()">🔑 Entrar como Administrador</button>
+      </div>
+      
+      <div id="painelAdmin" class="hidden">
+        <div class="status-sync ok" id="statusAdminSync"></div>
+        <h3 style="margin:15px 0 10px;color:#6b21a8;">📋 Lista Completa da Família</h3>
+        <div id="listaCompleta">
+          <div class="empty">Aguardando contribuições...</div>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <button class="btn-whatsapp" onclick="enviarListaCompletaWhatsApp()">📲 ENVIAR LISTA NO WHATSAPP</button>
+        <button class="btn-admin" onclick="exportarTexto()">📋 Copiar Lista</button>
+        <button class="btn-clear" onclick="limparTodasContribuicoes()">⚠️ Limpar Tudo</button>
+        <button class="btn-primary btn-small" style="margin-top:10px;" onclick="sairAdmin()">Sair</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyADUuMYnkSeWbBPX6INsPEc7b1IiFtQNlo",
+      authDomain: "ceia-natal-32fee.firebaseapp.com",
+      projectId: "ceia-natal-32fee",
+      storageBucket: "ceia-natal-32fee.firebasestorage.app",
+      messagingSenderId: "291220419322",
+      appId: "1:291220419322:web:15ac186e88553404680f43"
+    };
+
+    const SENHA_ADMIN = "ceia2026";
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const colecao = "contribuicoes";
+
+    const ITENS_CEIA = [
+      "Peru", "Arroz", "Farofa", "Salpicão de frango", "Frango assado",
+      "Salada maionese", "Salada verde", "Lasanha", "Macarrão",
+      "Panetone", "Bolo", "Frutas", "Suco", "Refrigerante", "Sobremesa"
+    ];
+    const ITEM_REFRIGERANTE = "Refrigerante";
+
+    let minhaLista = [];
+    let meuNome = '';
+    let qtdRefri = '';
+    let adminLogado = false;
+    let idUsuario = localStorage.getItem('idUsuario') || gerarId();
+
+    if (!localStorage.getItem('idUsuario')) {
+      localStorage.setItem('idUsuario', idUsuario);
+    }
+
+    function gerarId() {
+      return 'usr_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    window.onload = function() {
+      renderizarItens();
+      carregarMinhaContribuicao();
+      configurarAtualizacaoTempoReal();
+    };
+
+    function renderizarItens() {
+      const container = document.getElementById('itensContainer');
+      container.innerHTML = ITENS_CEIA.map(item => {
+        const selecionado = minhaLista.includes(item);
+        return `
+          <label class="item-option ${selecionado?'selected':''}">
+            <input type="checkbox" value="${item}" ${selecionado?'checked':''} onchange="toggleItem('${item}')">
+            <span>${item}${item === ITEM_REFRIGERANTE ? ' 🥤' : ''}</span>
+          </label>
+        `;
+      }).join('');
+    }
+
+    function toggleItem(item) {
+      if (minhaLista.includes(item)) {
+        minhaLista = minhaLista.filter(i => i !== item);
+      } else {
+        minhaLista.push(item);
+      }
+      renderizarItens();
+      atualizarVisibilidadeRefri();
+    }
+
+    function atualizarVisibilidadeRefri() {
+      const box = document.getElementById('refriQuantidadeBox');
+      if (minhaLista.includes(ITEM_REFRIGERANTE)) {
+        box.classList.add('visivel');
+      } else {
+        box.classList.remove('visivel');
+        document.getElementById('qtdRefri').value = '';
+      }
+    }
+
+    async function salvarContribuicao() {
+      meuNome = document.getElementById('nome').value.trim();
+      qtdRefri = document.getElementById('qtdRefri').value;
+      const statusEl = document.getElementById('statusUsuario');
+      
+      if (!meuNome) { alert('⚠️ Digite seu nome!'); return; }
+      if (minhaLista.length === 0) { alert('⚠️ Selecione pelo menos 1 item!'); return; }
+      if (minhaLista.includes(ITEM_REFRIGERANTE) && !qtdRefri) { alert('⚠️ Escolha a quantidade de refrigerante!'); return; }
+
+      const dados = {
+        idUsuario,
+        nome: meuNome,
+        itens: [...minhaLista],
+        qtdRefri: qtdRefri || null,
+        atualizadoEm: new Date()
+      };
+
+      try {
+        statusEl.textContent = "🔄 Salvando...";
+        await db.collection(colecao).doc(idUsuario).set(dados);
+        localStorage.setItem('meuNome', meuNome);
+        localStorage.setItem('minhaLista', JSON.stringify(minhaLista));
+        localStorage.setItem('qtdRefri', qtdRefri);
+        statusEl.textContent = "✅ Salvo com sucesso!";
+        statusEl.classList.add('ok');
+        setTimeout(() => statusEl.textContent = "", 3000);
+        alert(`✅ Obrigado, ${meuNome}! Salvo!`);
+      } catch (erro) {
+        console.error(erro);
+        statusEl.textContent = "❌ Erro ao salvar";
+        alert("❌ Erro: " + erro.message + "\nVerifique as Regras no Firebase!");
+      }
+    }
+
+    function carregarMinhaContribuicao() {
+      const nomeSalvo = localStorage.getItem('meuNome');
+      const listaSalva = localStorage.getItem('minhaLista');
+      const qtdSalva = localStorage.getItem('qtdRefri');
+      
+      if (nomeSalvo) meuNome = nomeSalvo;
+      if (listaSalva) minhaLista = JSON.parse(listaSalva);
+      if (qtdSalva) qtdRefri = qtdSalva;
+      
+      if (meuNome) document.getElementById('nome').value = meuNome;
+      if (qtdSalva) document.getElementById('qtdRefri').value = qtdSalva;
+      atualizarVisibilidadeRefri();
+    }
+
+    function configurarAtualizacaoTempoReal() {
+      db.collection(colecao).orderBy('nome').onSnapshot(snapshot => {
+        atualizarPainelAdmin(snapshot);
+      }, erro => {
+        console.log("Aguardando login do admin...", erro);
+      });
+    }
+
+    function atualizarPainelAdmin(snapshot) {
+      if (!adminLogado) return;
+      
+      const container = document.getElementById('listaCompleta');
+      const statusEl = document.getElementById('statusAdminSync');
+      
+      if (snapshot.empty) {
+        container.innerHTML = `<div class="empty">Ainda ninguém contribuiu. Compartilhe o link!</div>`;
+        statusEl.textContent = "📊 Última atualização: " + new Date().toLocaleTimeString('pt-BR');
+        return;
+      }
+
+      let html = '';
+      snapshot.forEach(doc => {
+        const p = doc.data();
+        html += gerarBlocoPessoa(p);
+      });
+      
+      container.innerHTML = html;
+      statusEl.textContent = `📊 ${snapshot.size} pessoa(s) — Atualizado: ${new Date().toLocaleTimeString('pt-BR')}`;
+    }
+
+    function gerarBlocoPessoa(p) {
+      let itensHTML = p.itens.map(i => {
+        if (i === ITEM_REFRIGERANTE && p.qtdRefri) {
+          return `<span class="tag-item destaque">✅ ${i}: ${p.qtdRefri}</span>`;
+        }
+        return `<span class="tag-item">✅ ${i}</span>`;
+      }).join('');
+      
+      return `
+        <div class="pessoa-block">
+          <div class="pessoa-nome">🎅 ${p.nome}</div>
+          <div class="pessoa-itens">${itensHTML}</div>
+        </div>
+      `;
+    }
+
+    function verificarSenha() {
+      const senhaDigitada = document.getElementById('senhaAdmin').value;
+      if (senhaDigitada === SENHA_ADMIN) {
+        adminLogado = true;
+        document.getElementById('loginAdmin').classList.add('hidden');
+        document.getElementById('painelAdmin').classList.remove('hidden');
+        document.getElementById('statusAdmin').textContent = "Admin ✅";
+        document.getElementById('statusAdmin').style.background = "#20a070";
+      } else {
+        alert("❌ Senha incorreta!");
+      }
+    }
+
+    function sairAdmin() {
+      adminLogado = false;
+      document.getElementById('loginAdmin').classList.remove('hidden');
+      document.getElementById('painelAdmin').classList.add('hidden');
+      document.getElementById('statusAdmin').textContent = "Desconectado";
+      document.getElementById('statusAdmin').style.background = "";
+    }
+
+    async function gerarTextoCompleto() {
+      const snapshot = await db.collection(colecao).orderBy('nome').get();
+      if (snapshot.empty) return '🎄 Lista da Ceia de Natal — ainda sem contribuições!';
+      
+      let texto = '🎄 *LISTA DA CEIA DE NATAL — FAMÍLIA* 🎄\n\n';
+      snapshot.forEach(doc => {
+        const p = doc.data();
+        texto += `🎅 *${p.nome}*\n`;
+        p.itens.forEach(i => {
+          if (i === ITEM_REFRIGERANTE && p.qtdRefri) {
+            texto += `✅ ${i}: ${p.qtdRefri}\n`;
+          } else {
+            texto += `✅ ${i}\n`;
+          }
+        });
+        texto += '\n';
+      });
+      texto += `—\nAtualizado em: ${new Date().toLocaleString('pt-BR')}\n❤️ Feliz Natal!`;
+      return texto;
+    }
+
+    async function enviarListaCompletaWhatsApp() {
+      const texto = await gerarTextoCompleto();
+      window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+    }
+
+    async function exportarTexto() {
+      const texto = await gerarTextoCompleto();
+      try {
+        await navigator.clipboard.writeText(texto);
+        alert("📋 Lista copiada!");
+      } catch (e) {
+        alert(texto);
+      }
+    }
+
+    async function limparTodasContribuicoes() {
+      if (!confirm('⚠️ Tem certeza? Isso apaga TODAS as contribuições!')) return;
+      const snapshot = await db.collection(colecao).get();
+      const batch = db.batch();
+      snapshot.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
