@@ -342,8 +342,4 @@
     }
 
     async function limparTodasContribuicoes() {
-      if (!confirm('⚠️ Tem certeza? Isso apaga TODAS as contribuições!')) return;
-      const snapshot = await db.collection(colecao).get();
-      const batch = db.batch();
-      snapshot.forEach(doc => batch.delete(doc.ref));
-      await batch.commit();
+      if (!confirm('⚠️ Tem certeza? Isso apaga TODAS as contribuições
