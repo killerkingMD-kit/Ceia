@@ -4,50 +4,174 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🎄 Lista Ceia de Natal — Família</title>
+  
+  <!-- SDKs do Firebase (Compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Roboto,sans-serif;}
-    body{background:linear-gradient(135deg,#0f4d38,#16805c);min-height:100vh;padding:20px;}
-    .container{max-width:600px;margin:0 auto;}
-    header{text-align:center;color:white;margin-bottom:25px;}
-    header h1{font-size:1.7rem;margin-bottom:5px;}
-    header p{opacity:0.9;}
-    .card{background:#fff;border-radius:16px;padding:22px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,0.1);}
-    h2{font-size:1.15rem;color:#0f4d38;margin-bottom:15px;}
-    input, select{width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:8px;font-size:1rem;margin-bottom:12px;}
-    input:focus, select:focus{outline:none;border-color:#16805c;}
-    .items-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;}
-    @media(max-width:480px){.items-grid{grid-template-columns:1fr;}}
-    .item-option{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f0f7f4;border:2px solid transparent;border-radius:8px;cursor:pointer;transition:all 0.2s;}
-    .item-option:hover{background:#dcf1e7;}
-    .item-option.selected{background:#b7e4cd;border-color:#16805c;}
-    .item-option input[type="checkbox"]{width:auto;margin:0;transform:scale(1.2);accent-color:#16805c;}
-    .quantidade-box{background:#e8f5ef;padding:12px;border-radius:8px;margin:10px 0 15px 0;display:none;}
-    .quantidade-box.visivel{display:block;}
-    .quantidade-box label{font-size:0.95rem;color:#0f4d38;font-weight:500;display:block;margin-bottom:6px;}
-    .quantidade-box select{max-width:100%;margin-bottom:0;background:white;}
-    button{width:100%;padding:14px;border:none;border-radius:8px;font-size:1rem;font-weight:600;cursor:pointer;transition:opacity 0.2s;}
-    button:active{opacity:0.85;}
-    .btn-primary{background:linear-gradient(135deg,#16805c,#20a070);color:white;margin:8px 0;}
-    .btn-whatsapp{background:#25D366;color:white;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;}
-    .btn-admin{background:linear-gradient(135deg,#6b21a8,#8b5cf6);color:white;margin-top:8px;}
-    .btn-clear{background:#e74c3c;color:white;margin-top:8px;}
-    .btn-small{padding:8px 12px;font-size:0.9rem;width:auto;display:inline-block;}
-    .divider{height:1px;background:#e2e8f0;margin:18px 0;}
-    .pessoa-block{padding:14px;background:#f8faf9;border-radius:8px;margin-bottom:12px;border-left:4px solid #16805c;}
-    .pessoa-nome{font-weight:600;color:#0f4d38;margin-bottom:8px;font-size:1.05rem;}
-    .pessoa-itens{color:#374151;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
-    .tag-item{background:#dcf1e7;color:#0f4d38;padding:4px 10px;border-radius:12px;font-size:0.9rem;}
-    .tag-item.destaque{background:#fff3cd;color:#856404;border:1px solid #ffc107;}
-    .empty{text-align:center;padding:30px 20px;color:#888;}
-    .aviso{background:#e3f2fd;border:1px solid #2196f3;padding:12px;border-radius:8px;margin-bottom:15px;color:#0c5460;font-size:0.9rem;line-height:1.5;}
-    .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;}
-    .admin-header h2{color:#6b21a8;margin-bottom:0;}
-    .badge{background:#8b5cf6;color:white;padding:4px 10px;border-radius:12px;font-size:0.8rem;font-weight:600;}
-    .status-sync{text-align:center;font-size:0.85rem;color:#666;margin-bottom:10px;}
-    .status-sync.ok{color:#20a070;}
-    .hidden{display:none !important;}
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body {
+      background: linear-gradient(135deg, #0b3d2c 0%, #146c4e 100%);
+      min-height: 100vh;
+      padding: 20px 15px;
+      color: #1f2937;
+    }
+    .container { max-width: 600px; margin: 0 auto; }
+    
+    header { text-align: center; color: #fff; margin-bottom: 24px; }
+    header h1 { font-size: 1.8rem; margin-bottom: 6px; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    header p { opacity: 0.92; font-size: 1rem; }
+
+    .aviso {
+      background: #e0f2fe;
+      border-left: 4px solid #0284c7;
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      color: #0c4a6e;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    }
+
+    h2 { font-size: 1.2rem; color: #0f4d38; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    h3 { font-size: 1rem; color: #374151; margin: 14px 0 10px; }
+
+    input[type="text"], input[type="password"], select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+      background: #fff;
+    }
+    input:focus, select:focus { outline: none; border-color: #16805c; }
+
+    .items-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    @media (max-width: 480px) {
+      .items-grid { grid-template-columns: 1fr; }
+    }
+
+    .item-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 12px;
+      background: #f1f8f5;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+    }
+    .item-option:hover { background: #dcf1e7; }
+    .item-option.selected { background: #c2ebd6; border-color: #16805c; font-weight: 600; color: #0b3d2c; }
+    .item-option input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #16805c;
+      cursor: pointer;
+    }
+
+    .quantidade-box {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      padding: 14px;
+      border-radius: 10px;
+      margin: 12px 0 16px;
+      display: none;
+    }
+    .quantidade-box.visivel { display: block; }
+    .quantidade-box label { display: block; font-weight: 600; color: #065f46; margin-bottom: 8px; font-size: 0.95rem; }
+    .quantidade-box select { margin-bottom: 0; }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    button:active { transform: scale(0.99); opacity: 0.9; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-primary { background: linear-gradient(135deg, #16805c, #1ea375); color: #fff; margin-top: 4px; }
+    .btn-whatsapp { background: #25D366; color: #fff; margin-top: 10px; }
+    .btn-admin { background: linear-gradient(135deg, #6b21a8, #7e22ce); color: #fff; margin-top: 8px; }
+    .btn-clear { background: #dc2626; color: #fff; margin-top: 8px; }
+    .btn-outline { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; margin-top: 10px; }
+
+    .status-msg {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 10px;
+      min-height: 20px;
+      font-weight: 500;
+    }
+    .status-msg.ok { color: #15803d; }
+    .status-msg.erro { color: #dc2626; }
+
+    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .admin-header h2 { color: #6b21a8; margin-bottom: 0; }
+    .badge { background: #64748b; color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .badge.online { background: #16a34a; }
+
+    .resumo-box {
+      background: #f5f3ff;
+      border: 1px solid #ddd6fe;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .resumo-box h4 { color: #5b21b6; font-size: 0.95rem; margin-bottom: 8px; }
+    .resumo-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .resumo-tag { background: #ede9fe; color: #5b21b6; padding: 4px 9px; border-radius: 8px; font-size: 0.85rem; font-weight: 600; }
+
+    .pessoa-block {
+      padding: 14px;
+      background: #f8fafc;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      border-left: 4px solid #16805c;
+      position: relative;
+    }
+    .pessoa-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .pessoa-nome { font-weight: 700; color: #0f4d38; font-size: 1.05rem; }
+    .btn-remover-pessoa {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      width: auto;
+      cursor: pointer;
+    }
+    .pessoa-itens { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag-item { background: #dcfce7; color: #166534; padding: 4px 10px; border-radius: 14px; font-size: 0.88rem; }
+    .tag-item.destaque { background: #fef3c7; color: #92400e; border: 1px solid #f59e0b; font-weight: 600; }
+
+    .divider { height: 1px; background: #e2e8f0; margin: 18px 0; }
+    .empty { text-align: center; padding: 25px 15px; color: #6b7280; font-size: 0.95rem; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
@@ -58,19 +182,20 @@
     </header>
 
     <div class="aviso">
-      💡 <strong>Como usar:</strong> Digite seu nome → marque os itens → clique em Salvar!
+      💡 <strong>Como usar:</strong> Digite seu nome → marque o que você vai levar → clique em <strong>Salvar Minha Escolha</strong>!
     </div>
 
-    <div class="card" id="formUsuario">
+    <!-- FORMULÁRIO DO PARTICIPANTE -->
+    <div class="card">
       <h2>✍️ Minha Contribuição</h2>
-      <input type="text" id="nome" placeholder="Digite seu nome completo">
+      <input type="text" id="inputNome" placeholder="Digite seu nome completo" autocomplete="name">
       
-      <h3 style="font-size:1rem;color:#333;margin:12px 0 8px;">Itens da Ceia:</h3>
+      <h3>Itens da Ceia:</h3>
       <div class="items-grid" id="itensContainer"></div>
       
       <div class="quantidade-box" id="refriQuantidadeBox">
-        <label for="qtdRefri">🥤 Quantidade de refrigerante:</label>
-        <select id="qtdRefri">
+        <label for="selectQtdRefri">🥤 Quantidade de refrigerante:</label>
+        <select id="selectQtdRefri">
           <option value="">Selecione uma opção...</option>
           <option value="1 garrafa de 1L">1 garrafa de 1L</option>
           <option value="2 garrafas de 1L">2 garrafas de 1L</option>
@@ -83,39 +208,49 @@
         </select>
       </div>
       
-      <button class="btn-primary" onclick="salvarContribuicao()">💾 Salvar Minha Escolha</button>
-      <div class="status-sync" id="statusUsuario"></div>
+      <button type="button" class="btn-primary" id="btnSalvar">💾 Salvar Minha Escolha</button>
+      <div class="status-msg" id="statusUsuario"></div>
     </div>
 
+    <!-- ÁREA DO ADMINISTRADOR -->
     <div class="card">
       <div class="admin-header">
         <h2>🔒 Área do Administrador</h2>
-        <span class="badge" id="statusAdmin">Desconectado</span>
+        <span class="badge" id="badgeAdmin">Desconectado</span>
       </div>
       
       <div id="loginAdmin">
-        <input type="password" id="senhaAdmin" placeholder="Digite a senha de administração" onkeypress="if(event.key==='Enter') verificarSenha()">
-        <button class="btn-admin" onclick="verificarSenha()">🔑 Entrar como Administrador</button>
+        <input type="password" id="inputSenhaAdmin" placeholder="Digite a senha de administração">
+        <button type="button" class="btn-admin" id="btnEntrarAdmin">🔑 Entrar como Administrador</button>
       </div>
       
       <div id="painelAdmin" class="hidden">
-        <div class="status-sync ok" id="statusAdminSync"></div>
-        <h3 style="margin:15px 0 10px;color:#6b21a8;">📋 Lista Completa da Família</h3>
+        <div class="status-msg ok" id="statusAdminSync" style="margin-top:0; margin-bottom:12px;"></div>
+        
+        <div class="resumo-box" id="resumoContainer">
+          <h4>📊 Resumo Geral dos Itens:</h4>
+          <div class="resumo-tags" id="resumoTags"></div>
+        </div>
+
+        <h3 style="color:#6b21a8;">📋 Lista por Pessoa</h3>
         <div id="listaCompleta">
           <div class="empty">Carregando contribuições...</div>
         </div>
         
         <div class="divider"></div>
         
-        <button class="btn-whatsapp" onclick="enviarListaCompletaWhatsApp()">📲 ENVIAR LISTA NO WHATSAPP</button>
-        <button class="btn-admin" onclick="exportarTexto()">📋 Copiar Lista</button>
-        <button class="btn-clear" onclick="limparTodasContribuicoes()">⚠️ Limpar Tudo</button>
-        <button class="btn-primary btn-small" style="margin-top:10px;" onclick="sairAdmin()">Sair</button>
+        <button type="button" class="btn-whatsapp" id="btnWhatsApp">📲 ENVIAR LISTA NO WHATSAPP</button>
+        <button type="button" class="btn-admin" id="btnCopiar">📋 Copiar Lista</button>
+        <button type="button" class="btn-clear" id="btnLimparTudo">⚠️ Limpar Tudo</button>
+        <button type="button" class="btn-outline" id="btnSairAdmin">Sair do Painel</button>
       </div>
     </div>
   </div>
 
   <script>
+    // ==========================================
+    // CONFIGURAÇÃO DO FIREBASE
+    // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyADUuMYnkSeWbBPX6INsPEc7b1IiFtQNlo",
       authDomain: "ceia-natal-32fee.firebaseapp.com",
@@ -126,196 +261,267 @@
     };
 
     const SENHA_ADMIN = "ceia2026";
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const colecao = "contribuicoes";
+    const COLECAO = "contribuicoes";
+    const ITEM_REFRIGERANTE = "Refrigerante";
 
     const ITENS_CEIA = [
       "Peru", "Arroz", "Farofa", "Salpicão de frango", "Frango assado",
       "Salada maionese", "Salada verde", "Lasanha", "Macarrão",
       "Panetone", "Bolo", "Frutas", "Suco", "Refrigerante", "Sobremesa"
     ];
-    const ITEM_REFRIGERANTE = "Refrigerante";
 
+    // Inicializa Firebase com tratamento de erro
+    let db = null;
+    try {
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      db = firebase.firestore();
+    } catch (e) {
+      console.error("Erro ao inicializar Firebase:", e);
+      alert("Erro crítico ao conectar com o Firebase: " + e.message);
+    }
+
+    // Estado da aplicação
     let minhaLista = [];
-    let meuNome = '';
-    let qtdRefri = '';
     let adminLogado = false;
-    let ultimoSnapshot = null;
-    let idUsuario = localStorage.getItem('idUsuario') || gerarId();
+    let dadosAtuais = [];
 
-    if (!localStorage.getItem('idUsuario')) {
+    // Gera ou recupera ID único do dispositivo
+    let idUsuario = localStorage.getItem('idUsuario');
+    if (!idUsuario) {
+      idUsuario = 'usr_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 7);
       localStorage.setItem('idUsuario', idUsuario);
     }
 
-    function gerarId() {
-      return 'usr_' + Math.random().toString(36).substring(2, 11);
-    }
+    // Elementos do DOM
+    const elNome = document.getElementById('inputNome');
+    const elItensContainer = document.getElementById('itensContainer');
+    const elRefriBox = document.getElementById('refriQuantidadeBox');
+    const elQtdRefri = document.getElementById('selectQtdRefri');
+    const elBtnSalvar = document.getElementById('btnSalvar');
+    const elStatusUsuario = document.getElementById('statusUsuario');
 
-    function escaparHTML(str) {
+    // Função de segurança contra injeção de HTML
+    function escaparHTML(texto) {
       const div = document.createElement('div');
-      div.textContent = str;
+      div.textContent = texto;
       return div.innerHTML;
     }
 
-    window.onload = function() {
-      carregarMinhaContribuicao();
-      renderizarItens();
-      configurarAtualizacaoTempoReal();
-    };
-
+    // ==========================================
+    // RENDERIZAÇÃO E INTERAÇÃO DO USUÁRIO
+    // ==========================================
     function renderizarItens() {
-      const container = document.getElementById('itensContainer');
-      container.innerHTML = ITENS_CEIA.map(item => {
+      elItensContainer.innerHTML = '';
+      ITENS_CEIA.forEach(item => {
         const selecionado = minhaLista.includes(item);
-        return `
-          <label class="item-option ${selecionado ? 'selected' : ''}">
-            <input type="checkbox" value="${item}" ${selecionado ? 'checked' : ''} onchange="toggleItem('${item}')">
-            <span>${item}${item === ITEM_REFRIGERANTE ? ' 🥤' : ''}</span>
-          </label>
-        `;
-      }).join('');
+        const label = document.createElement('label');
+        label.className = 'item-option' + (selecionado ? ' selected' : '');
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.value = item;
+        checkbox.checked = selecionado;
+
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            if (!minhaLista.includes(item)) minhaLista.push(item);
+          } else {
+            minhaLista = minhaLista.filter(i => i !== item);
+          }
+          renderizarItens();
+          atualizarBoxRefri();
+        });
+
+        const span = document.createElement('span');
+        span.textContent = item + (item === ITEM_REFRIGERANTE ? ' 🥤' : '');
+
+        label.appendChild(checkbox);
+        label.appendChild(span);
+        elItensContainer.appendChild(label);
+      });
     }
 
-    function toggleItem(item) {
-      if (minhaLista.includes(item)) {
-        minhaLista = minhaLista.filter(i => i !== item);
-      } else {
-        minhaLista.push(item);
-      }
-      renderizarItens();
-      atualizarVisibilidadeRefri();
-    }
-
-    function atualizarVisibilidadeRefri() {
-      const box = document.getElementById('refriQuantidadeBox');
+    function atualizarBoxRefri() {
       if (minhaLista.includes(ITEM_REFRIGERANTE)) {
-        box.classList.add('visivel');
+        elRefriBox.classList.add('visivel');
       } else {
-        box.classList.remove('visivel');
-        document.getElementById('qtdRefri').value = '';
-        qtdRefri = '';
+        elRefriBox.classList.remove('visivel');
+        elQtdRefri.value = '';
       }
     }
 
-    async function salvarContribuicao() {
-      meuNome = document.getElementById('nome').value.trim();
-      qtdRefri = document.getElementById('qtdRefri').value;
-      const statusEl = document.getElementById('statusUsuario');
-      
-      if (!meuNome) { alert('⚠️ Digite seu nome!'); return; }
-      if (minhaLista.length === 0) { alert('⚠️ Selecione pelo menos 1 item!'); return; }
-      if (minhaLista.includes(ITEM_REFRIGERANTE) && !qtdRefri) { alert('⚠️ Escolha a quantidade de refrigerante!'); return; }
-
-      const dados = {
-        idUsuario,
-        nome: meuNome,
-        itens: [...minhaLista],
-        qtdRefri: minhaLista.includes(ITEM_REFRIGERANTE) ? qtdRefri : null,
-        atualizadoEm: new Date()
-      };
-
-      try {
-        statusEl.classList.remove('ok');
-        statusEl.textContent = "🔄 Salvando...";
-        await db.collection(colecao).doc(idUsuario).set(dados);
-        localStorage.setItem('meuNome', meuNome);
-        localStorage.setItem('minhaLista', JSON.stringify(minhaLista));
-        localStorage.setItem('qtdRefri', dados.qtdRefri || '');
-        statusEl.textContent = "✅ Salvo com sucesso!";
-        statusEl.classList.add('ok');
-        setTimeout(() => statusEl.textContent = "", 3000);
-        alert(`✅ Obrigado, ${meuNome}! Salvo!`);
-      } catch (erro) {
-        console.error(erro);
-        statusEl.textContent = "❌ Erro ao salvar";
-        alert("❌ Erro: " + erro.message + "\nVerifique as Regras no Firebase!");
-      }
-    }
-
-    function carregarMinhaContribuicao() {
+    function carregarDadosLocais() {
       const nomeSalvo = localStorage.getItem('meuNome');
       const listaSalva = localStorage.getItem('minhaLista');
       const qtdSalva = localStorage.getItem('qtdRefri');
-      
-      if (nomeSalvo) meuNome = nomeSalvo;
+
+      if (nomeSalvo) elNome.value = nomeSalvo;
       if (listaSalva) {
         try {
-          minhaLista = JSON.parse(listaSalva) || [];
+          const parsed = JSON.parse(listaSalva);
+          if (Array.isArray(parsed)) minhaLista = parsed;
         } catch (e) {
           minhaLista = [];
         }
       }
-      if (qtdSalva) qtdRefri = qtdSalva;
-      
-      if (meuNome) document.getElementById('nome').value = meuNome;
-      if (qtdSalva) document.getElementById('qtdRefri').value = qtdSalva;
-      atualizarVisibilidadeRefri();
+      if (qtdSalva) elQtdRefri.value = qtdSalva;
+
+      renderizarItens();
+      atualizarBoxRefri();
     }
 
-    function configurarAtualizacaoTempoReal() {
-      db.collection(colecao).orderBy('nome').onSnapshot(snapshot => {
-        ultimoSnapshot = snapshot;
-        atualizarPainelAdmin(snapshot);
-      }, erro => {
-        console.error("Erro ao sincronizar:", erro);
-      });
-    }
+    async function salvarContribuicao() {
+      const nome = elNome.value.trim();
+      const qtdRefri = elQtdRefri.value;
 
-    function atualizarPainelAdmin(snapshot) {
-      if (!adminLogado || !snapshot) return;
-      
-      const container = document.getElementById('listaCompleta');
-      const statusEl = document.getElementById('statusAdminSync');
-      
-      if (snapshot.empty) {
-        container.innerHTML = `<div class="empty">Ainda ninguém contribuiu. Compartilhe o link!</div>`;
-        statusEl.textContent = "📊 Última atualização: " + new Date().toLocaleTimeString('pt-BR');
+      if (!nome) {
+        alert('⚠️ Por favor, digite seu nome!');
+        elNome.focus();
+        return;
+      }
+      if (minhaLista.length === 0) {
+        alert('⚠️ Selecione pelo menos 1 item da ceia!');
+        return;
+      }
+      if (minhaLista.includes(ITEM_REFRIGERANTE) && !qtdRefri) {
+        alert('⚠️ Selecione a quantidade de refrigerante!');
+        elQtdRefri.focus();
         return;
       }
 
-      let html = '';
-      snapshot.forEach(doc => {
-        const p = doc.data();
-        html += gerarBlocoPessoa(p);
-      });
-      
-      container.innerHTML = html;
-      statusEl.textContent = `📊 ${snapshot.size} pessoa(s) — Atualizado: ${new Date().toLocaleTimeString('pt-BR')}`;
+      const dados = {
+        idUsuario: idUsuario,
+        nome: nome,
+        itens: [...minhaLista],
+        qtdRefri: minhaLista.includes(ITEM_REFRIGERANTE) ? qtdRefri : null,
+        atualizadoEm: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
+      elBtnSalvar.disabled = true;
+      elStatusUsuario.className = 'status-msg';
+      elStatusUsuario.textContent = '🔄 Salvando no banco de dados...';
+
+      try {
+        await db.collection(COLECAO).doc(idUsuario).set(dados);
+
+        localStorage.setItem('meuNome', nome);
+        localStorage.setItem('minhaLista', JSON.stringify(minhaLista));
+        localStorage.setItem('qtdRefri', dados.qtdRefri || '');
+
+        elStatusUsuario.className = 'status-msg ok';
+        elStatusUsuario.textContent = '✅ Contribuição salva com sucesso!';
+        alert(`✅ Obrigado, ${nome}! Sua escolha foi registrada.`);
+      } catch (erro) {
+        console.error('Erro ao salvar no Firestore:', erro);
+        elStatusUsuario.className = 'status-msg erro';
+        elStatusUsuario.textContent = '❌ Falha ao salvar: ' + erro.message;
+        alert('❌ Não foi possível salvar.\nMotivo: ' + erro.message);
+      } finally {
+        elBtnSalvar.disabled = false;
+      }
     }
 
-    function gerarBlocoPessoa(p) {
-      const itens = Array.isArray(p.itens) ? p.itens : [];
-      let itensHTML = itens.map(i => {
-        const itemSeguro = escaparHTML(i);
-        if (i === ITEM_REFRIGERANTE && p.qtdRefri) {
-          return `<span class="tag-item destaque">✅ ${itemSeguro}: ${escaparHTML(p.qtdRefri)}</span>`;
+    // ==========================================
+    // SINCRONIZAÇÃO EM TEMPO REAL E ADMIN
+    // ==========================================
+    function iniciarEscutaTempoReal() {
+      if (!db) return;
+
+      db.collection(COLECAO).onSnapshot(
+        (snapshot) => {
+          const lista = [];
+          snapshot.forEach((doc) => {
+            lista.push({ docId: doc.id, ...doc.data() });
+          });
+
+          // Ordena por nome no próprio navegador (evita precisar de índice no Firestore)
+          lista.sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt-BR'));
+          dadosAtuais = lista;
+
+          if (adminLogado) {
+            renderizarPainelAdmin();
+          }
+        },
+        (erro) => {
+          console.error('Erro na sincronização em tempo real:', erro);
+          document.getElementById('statusAdminSync').textContent = '❌ Erro de conexão: ' + erro.message;
         }
-        return `<span class="tag-item">✅ ${itemSeguro}</span>`;
-      }).join('');
-      
-      return `
-        <div class="pessoa-block">
-          <div class="pessoa-nome">🎅 ${escaparHTML(p.nome || 'Sem nome')}</div>
-          <div class="pessoa-itens">${itensHTML}</div>
-        </div>
-      `;
+      );
     }
 
-    function verificarSenha() {
-      const senhaDigitada = document.getElementById('senhaAdmin').value;
-      if (senhaDigitada === SENHA_ADMIN) {
+    function renderizarPainelAdmin() {
+      const containerLista = document.getElementById('listaCompleta');
+      const containerResumo = document.getElementById('resumoTags');
+      const statusSync = document.getElementById('statusAdminSync');
+
+      statusSync.textContent = `📊 ${dadosAtuais.length} pessoa(s) confirmada(s) • Atualizado às ${new Date().toLocaleTimeString('pt-BR')}`;
+
+      if (dadosAtuais.length === 0) {
+        containerResumo.innerHTML = '<span style="color:#6b7280;font-size:0.85rem;">Nenhum item ainda.</span>';
+        containerLista.innerHTML = '<div class="empty">Ainda ninguém contribuiu. Compartilhe o link com a família!</div>';
+        return;
+      }
+
+      // 1. Calcula o resumo geral dos itens
+      const contagemItens = {};
+      dadosAtuais.forEach(p => {
+        (p.itens || []).forEach(item => {
+          contagemItens[item] = (contagemItens[item] || 0) + 1;
+        });
+      });
+
+      containerResumo.innerHTML = Object.entries(contagemItens)
+        .sort((a, b) => b[1] - a[1])
+        .map(([item, qtd]) => `<span class="resumo-tag">${qtd}x ${escaparHTML(item)}</span>`)
+        .join('');
+
+      // 2. Renderiza cada pessoa
+      containerLista.innerHTML = dadosAtuais.map(p => {
+        const itensHTML = (p.itens || []).map(i => {
+          if (i === ITEM_REFRIGERANTE && p.qtdRefri) {
+            return `<span class="tag-item destaque">✅ ${escaparHTML(i)}: ${escaparHTML(p.qtdRefri)}</span>`;
+          }
+          return `<span class="tag-item">✅ ${escaparHTML(i)}</span>`;
+        }).join('');
+
+        return `
+          <div class="pessoa-block">
+            <div class="pessoa-topo">
+              <div class="pessoa-nome">🎅 ${escaparHTML(p.nome || 'Sem nome')}</div>
+              <button type="button" class="btn-remover-pessoa" onclick="removerPessoa('${escaparHTML(p.docId)}', '${escaparHTML(p.nome || '')}')">Excluir</button>
+            </div>
+            <div class="pessoa-itens">${itensHTML}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function removerPessoa(docId, nome) {
+      if (!confirm(`Deseja remover a contribuição de "${nome}"?`)) return;
+      try {
+        await db.collection(COLECAO).doc(docId).delete();
+      } catch (erro) {
+        alert('Erro ao remover: ' + erro.message);
+      }
+    }
+
+    function entrarAdmin() {
+      const senhaInput = document.getElementById('inputSenhaAdmin');
+      if (senhaInput.value === SENHA_ADMIN) {
         adminLogado = true;
-        document.getElementById('senhaAdmin').value = '';
+        senhaInput.value = '';
         document.getElementById('loginAdmin').classList.add('hidden');
         document.getElementById('painelAdmin').classList.remove('hidden');
-        document.getElementById('statusAdmin').textContent = "Admin ✅";
-        document.getElementById('statusAdmin').style.background = "#20a070";
-        if (ultimoSnapshot) {
-          atualizarPainelAdmin(ultimoSnapshot);
-        }
+        
+        const badge = document.getElementById('badgeAdmin');
+        badge.textContent = 'Admin ✅';
+        badge.classList.add('online');
+
+        renderizarPainelAdmin();
       } else {
-        alert("❌ Senha incorreta!");
+        alert('❌ Senha incorreta!');
       }
     }
 
@@ -323,23 +529,25 @@
       adminLogado = false;
       document.getElementById('loginAdmin').classList.remove('hidden');
       document.getElementById('painelAdmin').classList.add('hidden');
-      document.getElementById('statusAdmin').textContent = "Desconectado";
-      document.getElementById('statusAdmin').style.background = "";
+      
+      const badge = document.getElementById('badgeAdmin');
+      badge.textContent = 'Desconectado';
+      badge.classList.remove('online');
     }
 
-    async function gerarTextoCompleto() {
-      const snapshot = await db.collection(colecao).orderBy('nome').get();
-      if (snapshot.empty) return '🎄 Lista da Ceia de Natal — ainda sem contribuições!';
-      
+    function gerarTextoWhatsApp() {
+      if (dadosAtuais.length === 0) {
+        return '🎄 Lista da Ceia de Natal — ainda sem contribuições!';
+      }
+
       let texto = '🎄 *LISTA DA CEIA DE NATAL — FAMÍLIA* 🎄\n\n';
-      snapshot.forEach(doc => {
-        const p = doc.data();
+      dadosAtuais.forEach(p => {
         texto += `🎅 *${p.nome}*\n`;
         (p.itens || []).forEach(i => {
           if (i === ITEM_REFRIGERANTE && p.qtdRefri) {
-            texto += `✅ ${i}: ${p.qtdRefri}\n`;
+            texto += `  ✅ ${i}: ${p.qtdRefri}\n`;
           } else {
-            texto += `✅ ${i}\n`;
+            texto += `  ✅ ${i}\n`;
           }
         });
         texto += '\n';
@@ -348,35 +556,49 @@
       return texto;
     }
 
-    async function enviarListaCompletaWhatsApp() {
-      const texto = await gerarTextoCompleto();
-      window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
-    }
-
-    async function exportarTexto() {
-      const texto = await gerarTextoCompleto();
+    async function limparTudo() {
+      if (!confirm('⚠️ ATENÇÃO: Isso vai apagar TODAS as contribuições da lista. Continuar?')) return;
       try {
-        await navigator.clipboard.writeText(texto);
-        alert("📋 Lista copiada!");
-      } catch (e) {
-        alert(texto);
-      }
-    }
-
-    async function limparTodasContribuicoes() {
-      if (!confirm('⚠️ Tem certeza? Isso apaga TODAS as contribuições da lista!')) return;
-
-      try {
-        const snapshot = await db.collection(colecao).get();
+        const snapshot = await db.collection(COLECAO).get();
         const batch = db.batch();
         snapshot.forEach(doc => batch.delete(doc.ref));
         await batch.commit();
-        alert('🗑️ Todas as contribuições foram apagadas com sucesso!');
+        alert('🗑️ Lista limpa com sucesso!');
       } catch (erro) {
-        console.error(erro);
-        alert('❌ Erro ao limpar contribuições: ' + erro.message);
+        alert('❌ Erro ao limpar lista: ' + erro.message);
       }
     }
+
+    // ==========================================
+    // EVENTOS INICIAIS
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarDadosLocais();
+      iniciarEscutaTempoReal();
+
+      elBtnSalvar.addEventListener('click', salvarContribuicao);
+      document.getElementById('btnEntrarAdmin').addEventListener('click', entrarAdmin);
+      document.getElementById('inputSenhaAdmin').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') entrarAdmin();
+      });
+      document.getElementById('btnSairAdmin').addEventListener('click', sairAdmin);
+      document.getElementById('btnLimparTudo').addEventListener('click', limparTudo);
+
+      document.getElementById('btnWhatsApp').addEventListener('click', () => {
+        const texto = gerarTextoWhatsApp();
+        window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+      });
+
+      document.getElementById('btnCopiar').addEventListener('click', async () => {
+        const texto = gerarTextoWhatsApp();
+        try {
+          await navigator.clipboard.writeText(texto);
+          alert('📋 Lista copiada para a área de transferência!');
+        } catch (e) {
+          alert(texto);
+        }
+      });
+    });
   </script>
 </body>
 </html>
